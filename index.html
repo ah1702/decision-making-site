@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Maker</title>
+</head>
+<body>
+    <h1>Welcome to My Decision Maker!</h1>
+    <p>Click the button below to get help making a decision.</p>
+    <button onclick="makeDecision()">Make a Decision</button>
+    <p id="decision"></p>
+    
+    <script>
+        function makeDecision() {
+            const decisions = ["Yes", "No", "Maybe"];
+            const randomIndex = Math.floor(Math.random() * decisions.length);
+            document.getElementById('decision').innerText = decisions[randomIndex];
+        }
+    </script>
+</body>
+</html>
