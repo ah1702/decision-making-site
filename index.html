@@ -118,3 +118,51 @@
 
             // Create chart.js graph
             const ctx = document.getElementById('sleepChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Energy Level',
+                        data: data,
+                        borderColor: '#4CAF50',
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time of Day'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Energy Level'
+                            },
+                            suggestedMin: -1,
+                            suggestedMax: 1
+                        }
+                    }
+                }
+            });
+
+            // Display sleep cycle recommendation
+            document.getElementById('recommendation').textContent = `To optimize your sleep cycle, try to go to bed around ${formatTime(sleepStartInMinutes)} to wake up feeling refreshed at ${wakeUpTime}.`;
+
+        }
+
+        // Helper function to format time in minutes to HH:MM format
+        function formatTime(minutes) {
+            let hours = Math.floor(minutes / 60);
+            let mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+
+</html>
