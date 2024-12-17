@@ -53,10 +53,11 @@
             font-weight: bold;
         }
 
-        textarea {
+        textarea,
+        select {
             width: 100%;
-            height: 150px;
-            padding: 15px;
+            height: 40px;
+            padding: 10px;
             margin-bottom: 20px;
             font-size: 1.1em;
             border-radius: 10px;
@@ -118,16 +119,51 @@
 <body>
     <div class="container">
         <h1>Sleep Cycle Manager</h1>
+        
+        <!-- Phase 1: Current Sleep Patterns -->
         <div id="phase1">
             <h2>Phase 1: Current Sleep Patterns</h2>
-            <textarea id="currentPatterns" placeholder="Describe your current sleep patterns..."></textarea><br>
+            <label>How many hours of sleep do you typically get each night?</label>
+            <input type="number" id="currentSleepHours" placeholder="Enter hours of sleep" min="1" max="12">
+            
+            <label>Do you have a consistent bedtime or wake-up time?</label>
+            <select id="bedtimeConsistency">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+
+            <label>Do you feel rested when you wake up in the morning?</label>
+            <select id="restedFeel">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+
             <button onclick="processPhase1()">Submit Current Patterns</button>
         </div>
+
+        <!-- Phase 2: Sleep Goals -->
         <div id="phase2" style="display: none;">
             <h2>Phase 2: Sleep Goals</h2>
-            <textarea id="sleepGoals" placeholder="Describe your sleep goals..."></textarea><br>
+            <label>How many hours of sleep would you ideally like to get each night?</label>
+            <input type="number" id="goalSleepHours" placeholder="Enter ideal hours of sleep" min="1" max="12">
+
+            <label>Would you like to establish a consistent bedtime or wake-up time?</label>
+            <select id="goalBedtimeConsistency">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+
+            <label>Are there specific habits you'd like to improve?</label>
+            <select id="goalHabits">
+                <option value="fallAsleep">Fall asleep faster</option>
+                <option value="reduceAwakenings">Reduce nighttime awakenings</option>
+                <option value="wakeUpFresher">Wake up feeling more rested</option>
+            </select>
+
             <button onclick="processPhase2()">Submit Sleep Goals</button>
         </div>
+
+        <!-- Graphs and Suggestions -->
         <div id="graphs" style="display: none;">
             <h2>Comparing Your Sleep Patterns and Goals</h2>
             <canvas id="currentSleepChart"></canvas>
@@ -139,12 +175,14 @@
     <script>
         // Phase 1: Process current sleep patterns
         function processPhase1() {
-            const currentPatterns = document.getElementById('currentPatterns').value;
+            const currentSleepHours = document.getElementById('currentSleepHours').value;
+            const bedtimeConsistency = document.getElementById('bedtimeConsistency').value;
+            const restedFeel = document.getElementById('restedFeel').value;
             let currentSleepData = [];
             let currentLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
 
             // Simulated data for current sleep patterns
-            currentSleepData = currentLabels.map((_, index) => 6 + Math.sin(index * Math.PI / 15) * 2);  // Example
+            currentSleepData = currentLabels.map(() => parseFloat(currentSleepHours));
 
             // Hide phase 1 and show phase 2
             document.getElementById('phase1').style.display = 'none';
@@ -157,12 +195,14 @@
 
         // Phase 2: Process sleep goals
         function processPhase2() {
-            const sleepGoals = document.getElementById('sleepGoals').value;
+            const goalSleepHours = document.getElementById('goalSleepHours').value;
+            const goalBedtimeConsistency = document.getElementById('goalBedtimeConsistency').value;
+            const goalHabits = document.getElementById('goalHabits').value;
             let goalSleepData = [];
             let goalLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
 
             // Simulated data for sleep goals
-            goalSleepData = goalLabels.map(() => 8);  // Example: the goal is 8 hours every day
+            goalSleepData = goalLabels.map(() => parseFloat(goalSleepHours));
 
             // Render the graphs
             document.getElementById('graphs').style.display = 'block';
