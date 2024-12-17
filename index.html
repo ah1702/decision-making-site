@@ -5,20 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Sleep Cycle Manager</title>
+    <title>Sleep Cycle Management</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* General styling */
-        body {
-            font-family: Arial, sans-serif;
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100%; /* Ensure the height is 100% of the viewport */
+            overflow-x: hidden; /* Prevent horizontal overflow */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #1E3A8A, #6D28D9); /* Navy blue to light purple gradient */
             position: relative;
+            min-height: 100%; /* Allow scrolling if the content overflows */
         }
 
         /* Adding moon and stars background */
@@ -43,7 +48,8 @@
             max-width: 1000px;
             z-index: 1;
             position: relative;
-            margin: 30px; /* Adds padding around the container */
+            margin: 30px;
+            overflow: hidden; /* Ensure the container doesn’t overflow */
         }
 
         h1 {
@@ -118,180 +124,122 @@
 
 <body>
     <div class="container">
-        <h1>Sleep Cycle Manager</h1>
+        <h1>Sleep Cycle Management</h1>
         
         <!-- Phase 1: Current Sleep Patterns -->
         <div id="phase1">
-            <h2>Phase 1: Current Sleep Patterns</h2>
-            <label>How many hours of sleep do you typically get each night?</label>
-            <input type="number" id="currentSleepHours" placeholder="Enter hours of sleep" min="1" max="12">
-            
-            <label>Do you have a consistent bedtime or wake-up time?</label>
-            <select id="bedtimeConsistency">
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-
-            <label>Do you feel rested when you wake up in the morning?</label>
-            <select id="restedFeel">
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-
-            <button onclick="processPhase1()">Submit Current Patterns</button>
+            <h2>Current Sleep Patterns</h2>
+            <textarea id="currentSleep" placeholder="How many hours do you sleep on average per night?"></textarea><br>
+            <textarea id="sleepQuality" placeholder="How would you rate your sleep quality (1-10)?"></textarea><br>
+            <textarea id="wakeUpTime" placeholder="What time do you usually wake up?"></textarea><br>
+            <button onclick="processCurrentSleep()">Submit Current Sleep Data</button>
         </div>
 
         <!-- Phase 2: Sleep Goals -->
         <div id="phase2" style="display: none;">
-            <h2>Phase 2: Sleep Goals</h2>
-            <label>How many hours of sleep would you ideally like to get each night?</label>
-            <input type="number" id="goalSleepHours" placeholder="Enter ideal hours of sleep" min="1" max="12">
-
-            <label>Would you like to establish a consistent bedtime or wake-up time?</label>
-            <select id="goalBedtimeConsistency">
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-
-            <label>Are there specific habits you'd like to improve?</label>
-            <select id="goalHabits">
-                <option value="fallAsleep">Fall asleep faster</option>
-                <option value="reduceAwakenings">Reduce nighttime awakenings</option>
-                <option value="wakeUpFresher">Wake up feeling more rested</option>
-            </select>
-
-            <button onclick="processPhase2()">Submit Sleep Goals</button>
+            <h2>Sleep Goals</h2>
+            <textarea id="goalSleep" placeholder="How many hours of sleep do you aim for?"></textarea><br>
+            <textarea id="goalQuality" placeholder="What would be your ideal sleep quality (1-10)?"></textarea><br>
+            <textarea id="goalWakeUpTime" placeholder="What time would you like to wake up?"></textarea><br>
+            <button onclick="processSleepGoals()">Submit Sleep Goals</button>
         </div>
 
-        <!-- Graphs and Suggestions -->
-        <div id="graphs" style="display: none;">
-            <h2>Comparing Your Sleep Patterns and Goals</h2>
-            <canvas id="currentSleepChart"></canvas>
-            <canvas id="goalSleepChart"></canvas>
+        <!-- Graph display -->
+        <div>
+            <h2>Graph Comparison of Current Sleep vs Goals</h2>
+            <canvas id="sleepGraph"></canvas>
         </div>
-        <div class="suggestions" id="suggestions"></div>
+
+        <!-- Sleep Suggestions -->
+        <div id="sleepSuggestions" class="suggestions" style="display: none;">
+            <h3>Sleep Suggestions</h3>
+            <p id="suggestionsText"></p>
+        </div>
     </div>
 
     <script>
-        // Phase 1: Process current sleep patterns
-        function processPhase1() {
-            const currentSleepHours = document.getElementById('currentSleepHours').value;
-            const bedtimeConsistency = document.getElementById('bedtimeConsistency').value;
-            const restedFeel = document.getElementById('restedFeel').value;
-            let currentSleepData = [];
-            let currentLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
+        let currentData = {};
+        let goalData = {};
 
-            // Simulated data for current sleep patterns
-            currentSleepData = currentLabels.map(() => parseFloat(currentSleepHours));
+        // Phase 1: Process current sleep data
+        function processCurrentSleep() {
+            currentData.hours = parseFloat(document.getElementById('currentSleep').value);
+            currentData.quality = parseFloat(document.getElementById('sleepQuality').value);
+            currentData.wakeUpTime = document.getElementById('wakeUpTime').value;
 
-            // Hide phase 1 and show phase 2
+            // Show Phase 2
             document.getElementById('phase1').style.display = 'none';
             document.getElementById('phase2').style.display = 'block';
-
-            // Store current sleep data globally
-            window.currentSleepData = currentSleepData;
-            window.currentLabels = currentLabels;
         }
 
         // Phase 2: Process sleep goals
-        function processPhase2() {
-            const goalSleepHours = document.getElementById('goalSleepHours').value;
-            const goalBedtimeConsistency = document.getElementById('goalBedtimeConsistency').value;
-            const goalHabits = document.getElementById('goalHabits').value;
-            let goalSleepData = [];
-            let goalLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
+        function processSleepGoals() {
+            goalData.hours = parseFloat(document.getElementById('goalSleep').value);
+            goalData.quality = parseFloat(document.getElementById('goalQuality').value);
+            goalData.wakeUpTime = document.getElementById('goalWakeUpTime').value;
 
-            // Simulated data for sleep goals
-            goalSleepData = goalLabels.map(() => parseFloat(goalSleepHours));
+            // Generate Graph
+            generateGraph();
 
-            // Render the graphs
-            document.getElementById('graphs').style.display = 'block';
-            renderCurrentSleepGraph(window.currentLabels, window.currentSleepData);
-            renderGoalSleepGraph(goalLabels, goalSleepData);
-
-            // Provide suggestions based on current vs goal
-            generateSuggestions(window.currentSleepData, goalSleepData);
+            // Show Sleep Suggestions
+            generateSleepSuggestions();
         }
 
-        // Function to render the current sleep chart
-        function renderCurrentSleepGraph(labels, data) {
-            const ctx = document.getElementById('currentSleepChart').getContext('2d');
+        // Generate comparison graph
+        function generateGraph() {
+            const ctx = document.getElementById('sleepGraph').getContext('2d');
             new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: ['Current Sleep', 'Sleep Goal'],
                     datasets: [{
-                        label: 'Current Sleep Patterns (hrs)',
-                        data: data,
-                        borderColor: 'blue',
-                        fill: false,
-                        tension: 0.1
+                        label: 'Sleep Hours',
+                        data: [currentData.hours, goalData.hours],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'],
+                        borderWidth: 1
+                    }, {
+                        label: 'Sleep Quality',
+                        data: [currentData.quality, goalData.quality],
+                        backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 159, 64, 1)'],
+                        borderWidth: 1
                     }]
                 },
                 options: {
-                    responsive: true,
                     scales: {
-                        x: {
-                            title: { display: true, text: 'Days' }
-                        },
                         y: {
-                            title: { display: true, text: 'Hours of Sleep' },
-                            min: 0,
-                            max: 12
+                            beginAtZero: true
                         }
                     }
                 }
             });
         }
 
-        // Function to render the sleep goal chart
-        function renderGoalSleepGraph(labels, data) {
-            const ctx = document.getElementById('goalSleepChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sleep Goals (hrs)',
-                        data: data,
-                        borderColor: 'green',
-                        fill: false,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Days' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Hours of Sleep' },
-                            min: 0,
-                            max: 12
-                        }
-                    }
-                }
-            });
-        }
+        // Generate sleep suggestions
+        function generateSleepSuggestions() {
+            const suggestions = document.getElementById('sleepSuggestions');
+            const suggestionsText = document.getElementById('suggestionsText');
 
-        // Function to generate sleep suggestions
-        function generateSuggestions(currentData, goalData) {
-            let currentAvg = currentData.reduce((a, b) => a + b) / currentData.length;
-            let goalAvg = goalData.reduce((a, b) => a + b) / goalData.length;
+            let suggestion = '';
 
-            let suggestions = "";
-            if (currentAvg < goalAvg) {
-                suggestions = "You are not meeting your sleep goals. Try going to bed earlier and aiming for 7-9 hours of sleep each night.";
-            } else if (currentAvg > goalAvg) {
-                suggestions = "You are getting more sleep than you need. Consider adjusting your schedule to avoid oversleeping.";
+            if (currentData.hours < goalData.hours) {
+                suggestion += 'Try to increase your sleep duration. Aiming for at least 7-8 hours of sleep is optimal for most people.\n';
             } else {
-                suggestions = "You're on track with your sleep goals. Keep up the good work!";
+                suggestion += 'You are getting enough sleep! Ensure your sleep quality stays high to maintain good health.\n';
             }
 
-            document.getElementById('suggestions').innerText = suggestions;
+            if (currentData.quality < goalData.quality) {
+                suggestion += 'Consider improving your sleep environment by reducing light exposure and limiting screen time before bed.\n';
+            } else {
+                suggestion += 'Your sleep quality is on track! Keep practicing good habits like staying consistent with your bedtime.\n';
+            }
+
+            suggestionsText.textContent = suggestion;
+            suggestions.style.display = 'block';
         }
     </script>
 </body>
 
 </html>
+
