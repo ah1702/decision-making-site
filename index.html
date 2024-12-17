@@ -40,9 +40,10 @@
             border-radius: 15px;
             box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 800px;
+            max-width: 1000px;
             z-index: 1;
             position: relative;
+            margin: 30px; /* Adds padding around the container */
         }
 
         h1 {
@@ -117,98 +118,138 @@
 <body>
     <div class="container">
         <h1>Sleep Cycle Manager</h1>
-        <textarea id="dilemmaInput" placeholder="Describe your sleep patterns or goals..."></textarea><br>
-        <button onclick="processInput()">Submit</button>
-        <div>
-            <h2>Graph of Your Sleep Cycle</h2>
-            <canvas id="sleepChart"></canvas>
+        <div id="phase1">
+            <h2>Phase 1: Current Sleep Patterns</h2>
+            <textarea id="currentPatterns" placeholder="Describe your current sleep patterns..."></textarea><br>
+            <button onclick="processPhase1()">Submit Current Patterns</button>
+        </div>
+        <div id="phase2" style="display: none;">
+            <h2>Phase 2: Sleep Goals</h2>
+            <textarea id="sleepGoals" placeholder="Describe your sleep goals..."></textarea><br>
+            <button onclick="processPhase2()">Submit Sleep Goals</button>
+        </div>
+        <div id="graphs" style="display: none;">
+            <h2>Comparing Your Sleep Patterns and Goals</h2>
+            <canvas id="currentSleepChart"></canvas>
+            <canvas id="goalSleepChart"></canvas>
         </div>
         <div class="suggestions" id="suggestions"></div>
     </div>
 
     <script>
-        // Function to process input and determine the model type
-        function processInput() {
-            const input = document.getElementById('dilemmaInput').value.toLowerCase();
-            let labels = [];
-            let data = [];
-            let suggestions = "";
+        // Phase 1: Process current sleep patterns
+        function processPhase1() {
+            const currentPatterns = document.getElementById('currentPatterns').value;
+            let currentSleepData = [];
+            let currentLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
 
-            // Create labels for the graph (time-based example)
-            labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
-            // Mock sleep data (for simplicity, this would normally be user input or dynamic)
-            data = labels.map((_, index) => 6 + Math.sin(index * Math.PI / 15) * 2);  // Simulated data for sleep cycles
+            // Simulated data for current sleep patterns
+            currentSleepData = currentLabels.map((_, index) => 6 + Math.sin(index * Math.PI / 15) * 2);  // Example
 
-            // Example suggestions logic based on sleep data
-            let averageSleep = data.reduce((acc, curr) => acc + curr, 0) / data.length;
-            if (averageSleep < 7) {
-                suggestions = "It looks like you're not getting enough sleep. Aim for at least 7-9 hours a night.";
-            } else if (averageSleep > 9) {
-                suggestions = "You're getting a lot of sleep! Make sure your sleep quality is good.";
-            } else {
-                suggestions = "You're on track with your sleep goals!";
-            }
+            // Hide phase 1 and show phase 2
+            document.getElementById('phase1').style.display = 'none';
+            document.getElementById('phase2').style.display = 'block';
 
-            // Render the graph
-            renderGraph(labels, data);
-            // Show sleep suggestions
-            document.getElementById('suggestions').innerText = suggestions;
+            // Store current sleep data globally
+            window.currentSleepData = currentSleepData;
+            window.currentLabels = currentLabels;
         }
 
-        // Function to render the chart with multiple datasets and interactive elements
-        function renderGraph(labels, data) {
-            const ctx = document.getElementById('sleepChart').getContext('2d');
+        // Phase 2: Process sleep goals
+        function processPhase2() {
+            const sleepGoals = document.getElementById('sleepGoals').value;
+            let goalSleepData = [];
+            let goalLabels = Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`);
+
+            // Simulated data for sleep goals
+            goalSleepData = goalLabels.map(() => 8);  // Example: the goal is 8 hours every day
+
+            // Render the graphs
+            document.getElementById('graphs').style.display = 'block';
+            renderCurrentSleepGraph(window.currentLabels, window.currentSleepData);
+            renderGoalSleepGraph(goalLabels, goalSleepData);
+
+            // Provide suggestions based on current vs goal
+            generateSuggestions(window.currentSleepData, goalSleepData);
+        }
+
+        // Function to render the current sleep chart
+        function renderCurrentSleepGraph(labels, data) {
+            const ctx = document.getElementById('currentSleepChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Sleep Duration (hours)',
-                            data: data,
-                            borderColor: 'blue',
-                            fill: false,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Ideal Sleep (7 hours)',
-                            data: Array(labels.length).fill(7), // Ideal sleep line
-                            borderColor: 'green',
-                            borderDash: [5, 5], // Dashed line
-                            fill: false,
-                            tension: 0.1
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Current Sleep Patterns (hrs)',
+                        data: data,
+                        borderColor: 'blue',
+                        fill: false,
+                        tension: 0.1
+                    }]
                 },
                 options: {
                     responsive: true,
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Day'
-                            }
+                            title: { display: true, text: 'Days' }
                         },
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Hours of Sleep'
-                            },
+                            title: { display: true, text: 'Hours of Sleep' },
                             min: 0,
                             max: 12
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    return `Day ${tooltipItem.label}: ${tooltipItem.raw.toFixed(2)} hours`;
-                                }
-                            }
                         }
                     }
                 }
             });
+        }
+
+        // Function to render the sleep goal chart
+        function renderGoalSleepGraph(labels, data) {
+            const ctx = document.getElementById('goalSleepChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sleep Goals (hrs)',
+                        data: data,
+                        borderColor: 'green',
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Days' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Hours of Sleep' },
+                            min: 0,
+                            max: 12
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to generate sleep suggestions
+        function generateSuggestions(currentData, goalData) {
+            let currentAvg = currentData.reduce((a, b) => a + b) / currentData.length;
+            let goalAvg = goalData.reduce((a, b) => a + b) / goalData.length;
+
+            let suggestions = "";
+            if (currentAvg < goalAvg) {
+                suggestions = "You are not meeting your sleep goals. Try going to bed earlier and aiming for 7-9 hours of sleep each night.";
+            } else if (currentAvg > goalAvg) {
+                suggestions = "You are getting more sleep than you need. Consider adjusting your schedule to avoid oversleeping.";
+            } else {
+                suggestions = "You're on track with your sleep goals. Keep up the good work!";
+            }
+
+            document.getElementById('suggestions').innerText = suggestions;
         }
     </script>
 </body>
