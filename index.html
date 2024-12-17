@@ -54,4 +54,94 @@
             margin-bottom: 20px;
         }
 
-      
+        button:hover {
+            background-color: #45a049;
+        }
+
+        canvas {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>What are you trying to decide?</h1>
+        <textarea id="dilemmaInput" placeholder="Describe your dilemma here..."></textarea><br>
+        <button onclick="processInput()">Submit</button>
+        <div>
+            <h2>Graph of Your Decision Model</h2>
+            <canvas id="decisionChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Function to process input and determine the model type
+        function processInput() {
+            const input = document.getElementById('dilemmaInput').value.toLowerCase();
+            let modelType = "linear"; // Default model
+            let labels = [];
+            let data = [];
+
+            // Simple keyword-based logic to decide the model type
+            if (input.includes("cycle") || input.includes("repeat") || input.includes("season")) {
+                modelType = "cyclic"; // Example of a cyclic model (sin wave)
+                labels = Array.from({ length: 100 }, (_, i) => i);
+                data = labels.map(x => Math.sin(x * Math.PI / 20));
+            } else if (input.includes("growth") || input.includes("increase")) {
+                modelType = "exponential"; // Exponential growth (y = e^x)
+                labels = Array.from({ length: 100 }, (_, i) => i);
+                data = labels.map(x => Math.exp(x / 10));
+            } else if (input.includes("decide") || input.includes("choice")) {
+                modelType = "parabolic"; // Parabolic model (y = x^2)
+                labels = Array.from({ length: 100 }, (_, i) => i - 50);
+                data = labels.map(x => x * x);
+            } else {
+                modelType = "linear"; // Linear model (y = x)
+                labels = Array.from({ length: 100 }, (_, i) => i);
+                data = labels.map(x => x);
+            }
+
+            // Create the chart based on model type
+            renderGraph(modelType, labels, data);
+        }
+
+        // Function to render the chart
+        function renderGraph(modelType, labels, data) {
+            const ctx = document.getElementById('decisionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Decision Model: ${modelType}`,
+                        data: data,
+                        fill: false,
+                        borderColor: modelType === 'linear' ? 'blue' : modelType === 'exponential' ? 'green' : modelType === 'cyclic' ? 'orange' : 'red',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Outcome'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
+
