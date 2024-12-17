@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Decision Dilemma Modeler</title>
+    <title>Sleep Cycle Manager</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f8f9fa;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -33,25 +33,23 @@
             margin-bottom: 20px;
         }
 
-        textarea {
-            width: 100%;
-            height: 150px;
+        input, button {
             padding: 10px;
-            margin-bottom: 20px;
             font-size: 1em;
-            border-radius: 8px;
+            margin: 10px;
+            border-radius: 5px;
             border: 1px solid #ccc;
         }
 
+        input[type="time"] {
+            width: 120px;
+        }
+
         button {
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            cursor: pointer;
         }
 
         button:hover {
@@ -60,87 +58,63 @@
 
         canvas {
             margin-top: 30px;
+            max-width: 100%;
+        }
+
+        .recommendation {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #555;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>What are you trying to decide?</h1>
-        <textarea id="dilemmaInput" placeholder="Describe your dilemma here..."></textarea><br>
-        <button onclick="processInput()">Submit</button>
+        <h1>Sleep Cycle Manager</h1>
+        <p>Optimize your sleep schedule for better rest and energy!</p>
+
+        <label for="wakeUpTime">Desired Wake-up Time:</label>
+        <input type="time" id="wakeUpTime" value="07:00"><br>
+
+        <label for="sleepDuration">Desired Sleep Duration (hours):</label>
+        <input type="number" id="sleepDuration" value="8" min="1" max="12"><br>
+
+        <button onclick="generateSleepCycle()">Generate Sleep Cycle</button>
+
+        <div id="recommendation" class="recommendation"></div>
+
         <div>
-            <h2>Graph of Your Decision Model</h2>
-            <canvas id="decisionChart"></canvas>
+            <h2>Your Ideal Sleep Cycle</h2>
+            <canvas id="sleepChart"></canvas>
         </div>
     </div>
 
     <script>
-        // Function to process input and determine the model type
-        function processInput() {
-            const input = document.getElementById('dilemmaInput').value.toLowerCase();
-            let modelType = "linear"; // Default model
-            let labels = [];
-            let data = [];
+        // Function to generate the sleep cycle graph based on user input
+        function generateSleepCycle() {
+            const wakeUpTime = document.getElementById('wakeUpTime').value;
+            const sleepDuration = parseInt(document.getElementById('sleepDuration').value);
 
-            // Simple keyword-based logic to decide the model type
-            if (input.includes("cycle") || input.includes("repeat") || input.includes("season")) {
-                modelType = "cyclic"; // Example of a cyclic model (sin wave)
-                labels = Array.from({ length: 100 }, (_, i) => i);
-                data = labels.map(x => Math.sin(x * Math.PI / 20));
-            } else if (input.includes("growth") || input.includes("increase")) {
-                modelType = "exponential"; // Exponential growth (y = e^x)
-                labels = Array.from({ length: 100 }, (_, i) => i);
-                data = labels.map(x => Math.exp(x / 10));
-            } else if (input.includes("decide") || input.includes("choice")) {
-                modelType = "parabolic"; // Parabolic model (y = x^2)
-                labels = Array.from({ length: 100 }, (_, i) => i - 50);
-                data = labels.map(x => x * x);
-            } else {
-                modelType = "linear"; // Linear model (y = x)
-                labels = Array.from({ length: 100 }, (_, i) => i);
-                data = labels.map(x => x);
+            // Convert wake-up time to minutes since midnight
+            const wakeUpHours = parseInt(wakeUpTime.split(":")[0]);
+            const wakeUpMinutes = parseInt(wakeUpTime.split(":")[1]);
+            const wakeUpInMinutes = wakeUpHours * 60 + wakeUpMinutes;
+
+            // Calculate ideal sleep start time (in minutes)
+            const sleepStartInMinutes = (wakeUpInMinutes - sleepDuration * 60 + 1440) % 1440;
+
+            // Generate time labels for the graph (24 hours)
+            const labels = Array.from({ length: 24 }, (_, i) => (i % 24) + "h");
+
+            // Generate sinusoidal data for the sleep cycle
+            let data = [];
+            for (let i = 0; i < 24; i++) {
+                let timeInMinutes = i * 60;
+                // Create a sinusoidal pattern with a peak at waking time and trough at sleep start
+                let sleepCycleValue = Math.sin((Math.PI * (timeInMinutes - sleepStartInMinutes)) / (sleepDuration * 60));
+                data.push(sleepCycleValue);
             }
 
-            // Create the chart based on model type
-            renderGraph(modelType, labels, data);
-        }
-
-        // Function to render the chart
-        function renderGraph(modelType, labels, data) {
-            const ctx = document.getElementById('decisionChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `Decision Model: ${modelType}`,
-                        data: data,
-                        fill: false,
-                        borderColor: modelType === 'linear' ? 'blue' : modelType === 'exponential' ? 'green' : modelType === 'cyclic' ? 'orange' : 'red',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Time'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Outcome'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-
-</html>
+            // Create chart.js graph
+            const ctx = document.getElementById('sleepChart').getContext('2d');
