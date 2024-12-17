@@ -8,9 +8,10 @@
     <title>Sleep Cycle Manager</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* General styling */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,7 +25,7 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            width: 80%;
+            width: 90%;
             max-width: 800px;
         }
 
@@ -33,23 +34,25 @@
             margin-bottom: 20px;
         }
 
-        input, button {
+        textarea {
+            width: 100%;
+            height: 150px;
             padding: 10px;
+            margin-bottom: 20px;
             font-size: 1em;
-            margin: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
             border: 1px solid #ccc;
         }
 
-        input[type="time"] {
-            width: 120px;
-        }
-
         button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
 
         button:hover {
@@ -61,10 +64,29 @@
             max-width: 100%;
         }
 
-        .recommendation {
+        .suggestions {
             margin-top: 20px;
-            font-size: 1.2em;
-            color: #555;
+            font-size: 1.1em;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            textarea {
+                height: 120px;
+            }
         }
     </style>
 </head>
@@ -72,63 +94,68 @@
 <body>
     <div class="container">
         <h1>Sleep Cycle Manager</h1>
-        <p>Optimize your sleep schedule for better rest and energy!</p>
-
-        <label for="wakeUpTime">Desired Wake-up Time:</label>
-        <input type="time" id="wakeUpTime" value="07:00"><br>
-
-        <label for="sleepDuration">Desired Sleep Duration (hours):</label>
-        <input type="number" id="sleepDuration" value="8" min="1" max="12"><br>
-
-        <button onclick="generateSleepCycle()">Generate Sleep Cycle</button>
-
-        <div id="recommendation" class="recommendation"></div>
-
+        <textarea id="dilemmaInput" placeholder="Describe your sleep patterns or goals..."></textarea><br>
+        <button onclick="processInput()">Submit</button>
         <div>
-            <h2>Your Ideal Sleep Cycle</h2>
+            <h2>Graph of Your Sleep Cycle</h2>
             <canvas id="sleepChart"></canvas>
         </div>
+        <div class="suggestions" id="suggestions"></div>
     </div>
 
     <script>
-        // Function to generate the sleep cycle graph based on user input
-        function generateSleepCycle() {
-            const wakeUpTime = document.getElementById('wakeUpTime').value;
-            const sleepDuration = parseInt(document.getElementById('sleepDuration').value);
-
-            // Convert wake-up time to minutes since midnight
-            const wakeUpHours = parseInt(wakeUpTime.split(":")[0]);
-            const wakeUpMinutes = parseInt(wakeUpTime.split(":")[1]);
-            const wakeUpInMinutes = wakeUpHours * 60 + wakeUpMinutes;
-
-            // Calculate ideal sleep start time (in minutes)
-            const sleepStartInMinutes = (wakeUpInMinutes - sleepDuration * 60 + 1440) % 1440;
-
-            // Generate time labels for the graph (24 hours)
-            const labels = Array.from({ length: 24 }, (_, i) => (i % 24) + "h");
-
-            // Generate sinusoidal data for the sleep cycle
+        // Function to process input and determine the model type
+        function processInput() {
+            const input = document.getElementById('dilemmaInput').value.toLowerCase();
+            let labels = [];
             let data = [];
-            for (let i = 0; i < 24; i++) {
-                let timeInMinutes = i * 60;
-                // Create a sinusoidal pattern with a peak at waking time and trough at sleep start
-                let sleepCycleValue = Math.sin((Math.PI * (timeInMinutes - sleepStartInMinutes)) / (sleepDuration * 60));
-                data.push(sleepCycleValue);
+            let suggestions = "";
+
+            // Create labels for the graph (time-based example)
+            labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+            // Mock sleep data (for simplicity, this would normally be user input or dynamic)
+            data = labels.map((_, index) => 6 + Math.sin(index * Math.PI / 15) * 2);  // Simulated data for sleep cycles
+
+            // Example suggestions logic based on sleep data
+            let averageSleep = data.reduce((acc, curr) => acc + curr, 0) / data.length;
+            if (averageSleep < 7) {
+                suggestions = "It looks like you're not getting enough sleep. Aim for at least 7-9 hours a night.";
+            } else if (averageSleep > 9) {
+                suggestions = "You're getting a lot of sleep! Make sure your sleep quality is good.";
+            } else {
+                suggestions = "You're on track with your sleep goals!";
             }
 
-            // Create chart.js graph
+            // Render the graph
+            renderGraph(labels, data);
+            // Show sleep suggestions
+            document.getElementById('suggestions').innerText = suggestions;
+        }
+
+        // Function to render the chart with multiple datasets and interactive elements
+        function renderGraph(labels, data) {
             const ctx = document.getElementById('sleepChart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Energy Level',
-                        data: data,
-                        borderColor: '#4CAF50',
-                        fill: false,
-                        tension: 0.1
-                    }]
+                    datasets: [
+                        {
+                            label: 'Sleep Duration (hours)',
+                            data: data,
+                            borderColor: 'blue',
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Ideal Sleep (7 hours)',
+                            data: Array(labels.length).fill(7), // Ideal sleep line
+                            borderColor: 'green',
+                            borderDash: [5, 5], // Dashed line
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -136,31 +163,29 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Time of Day'
+                                text: 'Day'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Energy Level'
+                                text: 'Hours of Sleep'
                             },
-                            suggestedMin: -1,
-                            suggestedMax: 1
+                            min: 0,
+                            max: 12
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    return `Day ${tooltipItem.label}: ${tooltipItem.raw.toFixed(2)} hours`;
+                                }
+                            }
                         }
                     }
                 }
             });
-
-            // Display sleep cycle recommendation
-            document.getElementById('recommendation').textContent = `To optimize your sleep cycle, try to go to bed around ${formatTime(sleepStartInMinutes)} to wake up feeling refreshed at ${wakeUpTime}.`;
-
-        }
-
-        // Helper function to format time in minutes to HH:MM format
-        function formatTime(minutes) {
-            let hours = Math.floor(minutes / 60);
-            let mins = minutes % 60;
-            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
         }
     </script>
 </body>
