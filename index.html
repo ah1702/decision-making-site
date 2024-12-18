@@ -201,15 +201,20 @@
 
         function generateGraph(graphType, color, phaseLabel) {
             const canvas = document.getElementById('sleepChart');
-            canvas.width = canvas.width;  // Clear the previous chart
             const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
+
+            // Clear previous chart if any
+            if (window.sleepChartInstance) {
+                window.sleepChartInstance.destroy(); // Destroy the previous chart instance
+            }
+
+            window.sleepChartInstance = new Chart(ctx, {
                 type: graphType, // 'line', 'bar', etc.
                 data: {
-                    labels: Array.from({ length: 30 }, (_, i) => i + 1),
+                    labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
                     datasets: [{
                         label: phaseLabel,
-                        data: Array.from({ length: 30 }, (_, i) => i + 1),
+                        data: Array.from({ length: 30 }, (_, i) => Math.random() * 8 + 4),  // Random data for illustration
                         borderColor: color,
                         fill: false,
                         tension: 0.4,
