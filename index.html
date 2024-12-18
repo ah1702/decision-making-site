@@ -1,226 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Sleep Cycle Management</title>
+    <title>Sleep Pattern Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Styling */
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-
         body {
             font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #1E3A8A, #6D28D9);
-            position: relative;
-            min-height: 100%;
+            height: 100vh;
+            margin: 0;
         }
-
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            background-repeat: repeat;
-            opacity: 0.15;
-        }
-
         .container {
             background-color: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 1000px;
-            z-index: 1;
+            color: black;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 900px;
+            margin: 20px;
             position: relative;
-            margin: 30px;
         }
-
-        h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: bold;
+        h1, h2 {
+            text-align: center;
         }
-
-        textarea,
-        select {
+        textarea, input {
             width: 100%;
-            height: 40px;
             padding: 10px;
+            font-size: 1em;
             margin-bottom: 20px;
-            font-size: 1.1em;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid #ccc;
-            box-sizing: border-box;
         }
-
         button {
-            padding: 12px 25px;
-            font-size: 1.1em;
+            padding: 10px 20px;
+            font-size: 1em;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             margin-bottom: 20px;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
         canvas {
             margin-top: 30px;
-            max-width: 100%;
-            border-radius: 8px;
-        }
-
-        .suggestions {
-            margin-top: 20px;
-            font-size: 1.2em;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            color: #333;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                width: 100%;
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            textarea {
-                height: 120px;
-            }
+            display: block;
+            width: 100%;
+            height: 400px;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <h1>Sleep Cycle Management</h1>
-        
+        <h1>Track Your Sleep Patterns and Goals</h1>
+
         <!-- Phase 1: Current Sleep Patterns -->
-        <div id="phase1">
-            <h2>Current Sleep Patterns</h2>
-            <textarea id="currentSleep" placeholder="How many hours do you sleep on average per night?"></textarea><br>
-            <textarea id="sleepQuality" placeholder="How would you rate your sleep quality (1-10)?"></textarea><br>
-            <textarea id="wakeUpTime" placeholder="What time do you usually wake up?"></textarea><br>
-            <button onclick="processCurrentSleep()">Submit Current Sleep Data</button>
-        </div>
+        <h2>Phase 1: Current Sleep Patterns</h2>
+        <textarea id="currentSleepInput" placeholder="Describe your current sleep patterns (e.g., hours, quality)"></textarea><br>
+        <button onclick="processCurrentSleepData()">Submit Current Sleep Data</button>
 
         <!-- Phase 2: Sleep Goals -->
-        <div id="phase2" style="display: none;">
-            <h2>Sleep Goals</h2>
-            <textarea id="goalSleep" placeholder="How many hours of sleep do you aim for?"></textarea><br>
-            <textarea id="goalQuality" placeholder="What would be your ideal sleep quality (1-10)?"></textarea><br>
-            <textarea id="goalWakeUpTime" placeholder="What time would you like to wake up?"></textarea><br>
-            <button onclick="processSleepGoals()">Submit Sleep Goals</button>
-        </div>
+        <h2>Phase 2: Your Sleep Goals</h2>
+        <textarea id="goalSleepInput" placeholder="Describe your sleep goals (e.g., hours per night, better quality)"></textarea><br>
+        <button onclick="processGoalSleepData()">Submit Sleep Goals</button>
 
-        <!-- Choose Graph Type -->
-        <div id="graphTypeSelection" style="display: none;">
-            <h3>Choose Graph Type</h3>
-            <select id="graphType">
-                <option value="linear">Linear</option>
-                <option value="sinusoidal">Sinusoidal</option>
-                <option value="exponential">Exponential</option>
-                <option value="polynomial">Polynomial</option>
-            </select>
-            <button onclick="generateGraph()">Generate Graph</button>
-        </div>
-
-        <!-- Graph display -->
-        <div>
-            <h2>Graph Comparison of Current Sleep vs Goals</h2>
-            <canvas id="sleepGraph"></canvas>
-        </div>
-
-        <!-- Sleep Suggestions -->
-        <div id="sleepSuggestions" class="suggestions" style="display: none;">
-            <h3>Sleep Suggestions</h3>
-            <p id="suggestionsText"></p>
-        </div>
+        <!-- Graph Display -->
+        <h2>Comparison of Sleep Data and Goals</h2>
+        <canvas id="sleepGraph"></canvas>
     </div>
 
     <script>
-        let currentData = {};
-        let goalData = {};
+        // Function to process current sleep data (Phase 1)
+        function processCurrentSleepData() {
+            const currentInput = document.getElementById('currentSleepInput').value.toLowerCase();
+            let currentLabels = [];
+            let currentData = [];
 
-        // Phase 1: Process current sleep data
-        function processCurrentSleep() {
-            currentData.hours = parseFloat(document.getElementById('currentSleep').value);
-            currentData.quality = parseFloat(document.getElementById('sleepQuality').value);
-            currentData.wakeUpTime = document.getElementById('wakeUpTime').value;
+            // Example for generating data (for simplicity, assume we're calculating hours of sleep)
+            currentLabels = Array.from({ length: 10 }, (_, i) => i + 1); // Days 1 to 10
+            currentData = currentLabels.map(x => Math.sin(x * Math.PI / 10) * 3 + 6); // Sinusoidal pattern of sleep data
 
-            // Show Phase 2
-            document.getElementById('phase1').style.display = 'none';
-            document.getElementById('phase2').style.display = 'block';
+            // Render the graph with current sleep data
+            renderGraph('current', currentLabels, currentData);
         }
 
-        // Phase 2: Process sleep goals
-        function processSleepGoals() {
-            goalData.hours = parseFloat(document.getElementById('goalSleep').value);
-            goalData.quality = parseFloat(document.getElementById('goalQuality').value);
-            goalData.wakeUpTime = document.getElementById('goalWakeUpTime').value;
+        // Function to process goal sleep data (Phase 2)
+        function processGoalSleepData() {
+            const goalInput = document.getElementById('goalSleepInput').value.toLowerCase();
+            let goalLabels = [];
+            let goalData = [];
 
-            // Show graph type selection
-            document.getElementById('phase2').style.display = 'none';
-            document.getElementById('graphTypeSelection').style.display = 'block';
+            // Generate goal data (e.g., exponential increase towards target sleep hours)
+            goalLabels = Array.from({ length: 10 }, (_, i) => i + 1); // Days 1 to 10
+            goalData = goalLabels.map(x => Math.exp(x / 5) + 5); // Exponential pattern of sleep goal
+
+            // Render the graph with goal sleep data
+            renderGraph('goal', goalLabels, goalData);
         }
 
-        // Generate Graph based on type selected
-        function generateGraph() {
-            const graphType = document.getElementById('graphType').value;
+        // Function to render graph
+        function renderGraph(type, labels, data) {
             const ctx = document.getElementById('sleepGraph').getContext('2d');
-            let labels = [];
-            let data = [];
-            
-            // Generate data for the chosen graph type
-            for (let i = 0; i <= 100; i++) {
-                labels.push(i);
-                if (graphType === 'linear') {
-                    data.push(i);
-                } else if (graphType === 'sinusoidal') {
-                    data.push(Math.sin(i * Math.PI / 20));
-                } else if (graphType === 'exponential') {
-                    data.push(Math.exp(i / 10));
-                } else if (graphType === 'polynomial') {
-                    data.push(Math.pow(i, 2));
-                }
-            }
-
-            // Create the chart
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: `Sleep Data - ${graphType.charAt(0).toUpperCase() + graphType.slice(1)}`,
+                        label: type === 'current' ? 'Current Sleep Data' : 'Sleep Goal',
                         data: data,
                         fill: false,
-                        borderColor: graphType === 'linear' ? 'blue' : graphType === 'sinusoidal' ? 'green' : graphType === 'exponential' ? 'red' : 'purple',
+                        borderColor: type === 'current' ? 'blue' : 'green',
                         tension: 0.1
                     }]
                 },
@@ -230,13 +129,13 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Time'
+                                text: 'Days'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Outcome'
+                                text: 'Hours of Sleep'
                             }
                         }
                     }
@@ -245,5 +144,4 @@
         }
     </script>
 </body>
-
 </html>
