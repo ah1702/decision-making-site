@@ -61,6 +61,8 @@
 
         canvas {
             margin-top: 30px;
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -167,7 +169,7 @@
 
             // Based on this data, determine the graph type for Phase 1
             let phase1Graph = determineGraphType(phase1Data);
-            generateGraph(phase1Graph, 'blue', 'Phase 1: Current Sleep Pattern');
+            generateGraph(phase1Graph, 'tab:blue', 'Phase 1: Current Sleep Pattern');
         }
 
         function processPhase2() {
@@ -184,18 +186,17 @@
 
             // Based on this data, determine the graph type for Phase 2
             let phase2Graph = determineGraphType(phase2Data);
-            generateGraph(phase2Graph, 'green', 'Phase 2: Sleep Goals');
+            generateGraph(phase2Graph, 'tab:green', 'Phase 2: Sleep Goals');
         }
 
         function determineGraphType(data) {
             // Placeholder logic for determining graph type
-            // More sophisticated logic based on answers can be added here
             if (data.currentHours === "1") {
-                return 'line';  // Example: Use a line graph
+                return 'line';  // Line graph for less than 6 hours
             } else if (data.goalDuration === "2") {
-                return 'bar';  // Example: Use a bar chart
+                return 'bar';  // Bar chart for rapid increase
             } else {
-                return 'radar';  // Example: Use a radar chart
+                return 'radar';  // Radar chart for gradual approach
             }
         }
 
@@ -226,6 +227,23 @@
                         title: {
                             display: true,
                             text: phaseLabel
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Hours'
+                            }
                         }
                     }
                 }
