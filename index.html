@@ -8,28 +8,25 @@
     <title>Sleep Pattern & Goal Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-       body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;  /* Ensure full screen height */
-    margin: 0;
-    text-align: center;
-}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;  /* Ensure full screen height */
+            margin: 0;
+            text-align: center;
+        }
 
-.container {
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    width: 80%;
-    max-width: 800px;
-    margin-top: 20px;  /* Keeps some space at the top */
-}
-
-
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;  /* Keeps some space at the top */
         }
 
         h1 {
@@ -71,7 +68,7 @@
 <body>
     <div class="container">
         <h1>Sleep Pattern & Goal Tracker</h1>
-        
+
         <!-- Phase 1: Current Sleep Pattern -->
         <h2>Phase 1: Current Sleep Pattern</h2>
         <form id="phase1">
@@ -162,6 +159,12 @@
             phase1Data.energy = document.getElementById('energy').value;
             phase1Data.currentHours = document.getElementById('currentHours').value;
 
+            // Validate form
+            if (!phase1Data.consistency || !phase1Data.irregularity || !phase1Data.energy || !phase1Data.currentHours) {
+                alert("Please fill out all fields in Phase 1.");
+                return;
+            }
+
             // Based on this data, determine the graph type for Phase 1
             let phase1Graph = determineGraphType(phase1Data);
             generateGraph(phase1Graph, 'blue', 'Phase 1: Current Sleep Pattern');
@@ -173,6 +176,12 @@
             phase2Data.maintainGoal = document.getElementById('maintainGoal').value;
             phase2Data.goalHours = document.getElementById('goalHours').value;
 
+            // Validate form
+            if (!phase2Data.goalDuration || !phase2Data.goalSpeed || !phase2Data.maintainGoal || !phase2Data.goalHours) {
+                alert("Please fill out all fields in Phase 2.");
+                return;
+            }
+
             // Based on this data, determine the graph type for Phase 2
             let phase2Graph = determineGraphType(phase2Data);
             generateGraph(phase2Graph, 'green', 'Phase 2: Sleep Goals');
@@ -182,16 +191,18 @@
             // Placeholder logic for determining graph type
             // More sophisticated logic based on answers can be added here
             if (data.currentHours === "1") {
-                return 'exponential'; // Example logic based on hours
+                return 'line';  // Example: Use a line graph
             } else if (data.goalDuration === "2") {
-                return 'linear'; 
+                return 'bar';  // Example: Use a bar chart
             } else {
-                return 'polynomial'; 
+                return 'radar';  // Example: Use a radar chart
             }
         }
 
         function generateGraph(graphType, color, phaseLabel) {
-            const ctx = document.getElementById('sleepChart').getContext('2d');
+            const canvas = document.getElementById('sleepChart');
+            canvas.width = canvas.width;  // Clear the previous chart
+            const ctx = canvas.getContext('2d');
             new Chart(ctx, {
                 type: graphType, // 'line', 'bar', etc.
                 data: {
