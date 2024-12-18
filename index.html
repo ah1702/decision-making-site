@@ -8,12 +8,11 @@
     <title>Sleep Cycle Management</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* General styling */
+        /* Styling */
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%; /* Ensure the height is 100% of the viewport */
-            overflow-x: hidden; /* Prevent horizontal overflow */
+            height: 100%;
         }
 
         body {
@@ -21,12 +20,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #1E3A8A, #6D28D9); /* Navy blue to light purple gradient */
+            background: linear-gradient(135deg, #1E3A8A, #6D28D9);
             position: relative;
-            min-height: 100%; /* Allow scrolling if the content overflows */
+            min-height: 100%;
         }
 
-        /* Adding moon and stars background */
         body::before {
             content: "";
             position: absolute;
@@ -34,9 +32,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); /* Starry sky pattern */
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
             background-repeat: repeat;
-            opacity: 0.15; /* Make stars subtle */
+            opacity: 0.15;
         }
 
         .container {
@@ -49,7 +47,6 @@
             z-index: 1;
             position: relative;
             margin: 30px;
-            overflow: hidden; /* Ensure the container doesn’t overflow */
         }
 
         h1 {
@@ -80,7 +77,6 @@
             border: none;
             border-radius: 8px;
             margin-bottom: 20px;
-            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -91,7 +87,6 @@
             margin-top: 30px;
             max-width: 100%;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .suggestions {
@@ -104,7 +99,7 @@
             color: #333;
         }
 
-        /* Responsive design */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .container {
                 width: 100%;
@@ -144,6 +139,18 @@
             <button onclick="processSleepGoals()">Submit Sleep Goals</button>
         </div>
 
+        <!-- Choose Graph Type -->
+        <div id="graphTypeSelection" style="display: none;">
+            <h3>Choose Graph Type</h3>
+            <select id="graphType">
+                <option value="linear">Linear</option>
+                <option value="sinusoidal">Sinusoidal</option>
+                <option value="exponential">Exponential</option>
+                <option value="polynomial">Polynomial</option>
+            </select>
+            <button onclick="generateGraph()">Generate Graph</button>
+        </div>
+
         <!-- Graph display -->
         <div>
             <h2>Graph Comparison of Current Sleep vs Goals</h2>
@@ -178,68 +185,65 @@
             goalData.quality = parseFloat(document.getElementById('goalQuality').value);
             goalData.wakeUpTime = document.getElementById('goalWakeUpTime').value;
 
-            // Generate Graph
-            generateGraph();
-
-            // Show Sleep Suggestions
-            generateSleepSuggestions();
+            // Show graph type selection
+            document.getElementById('phase2').style.display = 'none';
+            document.getElementById('graphTypeSelection').style.display = 'block';
         }
 
-        // Generate comparison graph
+        // Generate Graph based on type selected
         function generateGraph() {
+            const graphType = document.getElementById('graphType').value;
             const ctx = document.getElementById('sleepGraph').getContext('2d');
+            let labels = [];
+            let data = [];
+            
+            // Generate data for the chosen graph type
+            for (let i = 0; i <= 100; i++) {
+                labels.push(i);
+                if (graphType === 'linear') {
+                    data.push(i);
+                } else if (graphType === 'sinusoidal') {
+                    data.push(Math.sin(i * Math.PI / 20));
+                } else if (graphType === 'exponential') {
+                    data.push(Math.exp(i / 10));
+                } else if (graphType === 'polynomial') {
+                    data.push(Math.pow(i, 2));
+                }
+            }
+
+            // Create the chart
             new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: ['Current Sleep', 'Sleep Goal'],
+                    labels: labels,
                     datasets: [{
-                        label: 'Sleep Hours',
-                        data: [currentData.hours, goalData.hours],
-                        backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)'],
-                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)'],
-                        borderWidth: 1
-                    }, {
-                        label: 'Sleep Quality',
-                        data: [currentData.quality, goalData.quality],
-                        backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(255, 159, 64, 0.2)'],
-                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 159, 64, 1)'],
-                        borderWidth: 1
+                        label: `Sleep Data - ${graphType.charAt(0).toUpperCase() + graphType.slice(1)}`,
+                        data: data,
+                        fill: false,
+                        borderColor: graphType === 'linear' ? 'blue' : graphType === 'sinusoidal' ? 'green' : graphType === 'exponential' ? 'red' : 'purple',
+                        tension: 0.1
                     }]
                 },
                 options: {
+                    responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
                         y: {
-                            beginAtZero: true
+                            title: {
+                                display: true,
+                                text: 'Outcome'
+                            }
                         }
                     }
                 }
             });
         }
-
-        // Generate sleep suggestions
-        function generateSleepSuggestions() {
-            const suggestions = document.getElementById('sleepSuggestions');
-            const suggestionsText = document.getElementById('suggestionsText');
-
-            let suggestion = '';
-
-            if (currentData.hours < goalData.hours) {
-                suggestion += 'Try to increase your sleep duration. Aiming for at least 7-8 hours of sleep is optimal for most people.\n';
-            } else {
-                suggestion += 'You are getting enough sleep! Ensure your sleep quality stays high to maintain good health.\n';
-            }
-
-            if (currentData.quality < goalData.quality) {
-                suggestion += 'Consider improving your sleep environment by reducing light exposure and limiting screen time before bed.\n';
-            } else {
-                suggestion += 'Your sleep quality is on track! Keep practicing good habits like staying consistent with your bedtime.\n';
-            }
-
-            suggestionsText.textContent = suggestion;
-            suggestions.style.display = 'block';
-        }
     </script>
 </body>
 
 </html>
-
