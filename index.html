@@ -14,7 +14,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;  /* Ensure full screen height */
+            height: 100vh;
             margin: 0;
             text-align: center;
         }
@@ -26,7 +26,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             width: 80%;
             max-width: 800px;
-            margin-top: 20px;  /* Keeps some space at the top */
+            margin-top: 20px;
         }
 
         h1 {
@@ -168,7 +168,7 @@
             }
 
             // Based on this data, determine the graph type for Phase 1
-            let phase1Graph = determineGraphType(phase1Data);
+            let phase1Graph = determineGraphType(phase1Data, 'phase1');
             generateGraph(phase1Graph, 'tab:blue', 'Phase 1: Current Sleep Pattern');
         }
 
@@ -185,18 +185,29 @@
             }
 
             // Based on this data, determine the graph type for Phase 2
-            let phase2Graph = determineGraphType(phase2Data);
+            let phase2Graph = determineGraphType(phase2Data, 'phase2');
             generateGraph(phase2Graph, 'tab:green', 'Phase 2: Sleep Goals');
         }
 
-        function determineGraphType(data) {
-            // Placeholder logic for determining graph type
-            if (data.currentHours === "1") {
-                return 'line';  // Line graph for less than 6 hours
-            } else if (data.goalDuration === "2") {
-                return 'bar';  // Bar chart for rapid increase
-            } else {
-                return 'radar';  // Radar chart for gradual approach
+        function determineGraphType(data, phase) {
+            if (phase === 'phase1') {
+                // Phase 1 Graph Logic (Current Sleep Pattern)
+                if (data.currentHours === "1") {
+                    return 'line';  // Line chart for less than 6 hours
+                } else if (data.currentHours === "2") {
+                    return 'bar';  // Bar chart for 6-8 hours
+                } else {
+                    return 'radar';  // Radar chart for more than 8 hours
+                }
+            } else if (phase === 'phase2') {
+                // Phase 2 Graph Logic (Sleep Goals)
+                if (data.goalDuration === "1") {
+                    return 'bar';  // Bar chart for gradual increase
+                } else if (data.goalSpeed === "2") {
+                    return 'line';  // Line chart for steady increase
+                } else {
+                    return 'radar';  // Radar chart for more gradual approaches
+                }
             }
         }
 
@@ -209,13 +220,23 @@
                 window.sleepChartInstance.destroy(); // Destroy the previous chart instance
             }
 
+            // Example data based on the user's goal in Phase 2
+            let dataPoints = Array.from({ length: 30 }, (_, i) => {
+                if (phaseLabel === 'Phase 2: Sleep Goals') {
+                    // Gradually increase the sleep duration over 30 days
+                    return Math.min(6 + (i * 0.1), 8); // Gradually reach 8 hours
+                } else {
+                    return Math.random() * 8 + 4; // Random data for Phase 1
+                }
+            });
+
             window.sleepChartInstance = new Chart(ctx, {
-                type: graphType, // 'line', 'bar', etc.
+                type: graphType,
                 data: {
                     labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
                     datasets: [{
                         label: phaseLabel,
-                        data: Array.from({ length: 30 }, (_, i) => Math.random() * 8 + 4),  // Random data for illustration
+                        data: dataPoints,
                         borderColor: color,
                         fill: false,
                         tension: 0.4,
@@ -253,3 +274,4 @@
 </body>
 
 </html>
+
