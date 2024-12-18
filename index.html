@@ -100,139 +100,110 @@
             }
 
             // Generate the appropriate graph based on the function type
-            let graphType = determineGraphType(functionType);
             let currentSleepData = generateSleepData(functionType);
             let goalSleepData = generateGoalSleepData(goalHours);
 
             // Generate the graph comparing current sleep and goal sleep
-            generateGraph(graphType, functionType, currentSleepData, goalSleepData);
+            generateGraph(functionType, currentSleepData, goalSleepData);
             displayGoalText(goalHours);
         }
 
-  // New function for Linear Graph (Steady change)
-function generateLinearData() {
-    let startValue = 6; // starting value, 6 hours of sleep
-    return Array.from({ length: 30 }, (_, i) => startValue + i * 0.1);  // Increase 0.1 hours each day
-}
-
-// New function for Exponential Growth (Rapid increase)
-function generateExponentialData() {
-    let startValue = 6;
-    return Array.from({ length: 30 }, (_, i) => startValue * Math.pow(1.05, i));  // 5% growth each day
-}
-
-// New function for Polynomial (Curved progression)
-function generatePolynomialData() {
-    let startValue = 6;
-    return Array.from({ length: 30 }, (_, i) => startValue + Math.pow(i / 3, 2));  // Polynomial growth
-}
-
-// New function for Sinusoidal (Fluctuating sleep pattern)
-function generateSinusoidalData() {
-    let amplitude = 2;  // Variations of +-2 hours
-    let frequency = 0.3;  // Adjusts how frequent the cycles are
-    let phaseShift = 0;  // Controls the starting point of the wave
-    return Array.from({ length: 30 }, (_, i) => 6 + amplitude * Math.sin(frequency * i + phaseShift));  // Sinusoidal data
-}
-
-// New function to determine which graph type to generate based on Phase 2 input
-function determineGraphType(data) {
-    if (data.currentHours === "1" || data.goalDuration === "1") {
-        return 'linear';  // For less than 6 hours, use a linear graph (gradual change)
-    } else if (data.goalSpeed === "2") {
-        return 'exponential';  // Steady improvement suggests an exponential growth curve
-    } else if (data.goalDuration === "2") {
-        return 'polynomial';  // Rapid increase could be represented by a polynomial curve
-    } else {
-        return 'sinusoidal';  // Gradual sleep changes with fluctuations could be sinusoidal
-    }
-}
-
-// New function for generating the actual graph
-function generateGraph(graphType, color, phaseLabel) {
-    const canvas = document.getElementById('sleepChart');
-    const ctx = canvas.getContext('2d');
-
-    // Clear previous chart if any
-    if (window.sleepChartInstance) {
-        window.sleepChartInstance.destroy();
-    }
-
-    let dataPoints = [];
-    switch (graphType) {
-        case 'linear':
-            dataPoints = generateLinearData();
-            break;
-        case 'exponential':
-            dataPoints = generateExponentialData();
-            break;
-        case 'polynomial':
-            dataPoints = generatePolynomialData();
-            break;
-        case 'sinusoidal':
-            dataPoints = generateSinusoidalData();
-            break;
-        default:
-            dataPoints = generateLinearData();  // Default to linear if no type is specified
-            break;
-    }
-
-    window.sleepChartInstance = new Chart(ctx, {
-        type: 'line', // Assuming all graphs are line charts
-        data: {
-            labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
-            datasets: [{
-                label: phaseLabel,
-                data: dataPoints,
-                borderColor: color,
-                fill: false,
-                tension: 0.4,
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: phaseLabel
-                },
-                legend: {
-                    position: 'top'
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Days'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Hours of Sleep'
-                    }
+        function generateSleepData(functionType) {
+            // Generate the current sleep data based on the function type
+            let dataPoints = [];
+            for (let i = 0; i < 30; i++) {
+                if (functionType === "linear") {
+                    // Linear function: y = mx + b (e.g., y = 0.2 * x + 4)
+                    dataPoints.push(0.2 * i + 6);
+                } else if (functionType === "exponential") {
+                    // Exponential function: y = a * e^(bx)
+                    dataPoints.push(6 * Math.exp(0.1 * i)); 
+                } else if (functionType === "polynomial") {
+                    // Polynomial function: y = x^2 + 4x + 5
+                    dataPoints.push(Math.pow(i, 2) / 10 + 6); 
+                } else if (functionType === "sinusoidal") {
+                    // Sinusoidal function: y = A * sin(Bx + C) + D
+                    dataPoints.push(2 * Math.sin(0.3 * i) + 6);
                 }
             }
+            return dataPoints;
         }
-    });
-}
 
-// New function to display the sleep goal text and tips
-function displayGoalText(goalHours) {
-    let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
+        function generateGoalSleepData(goalHours) {
+            // Goal sleep data is a flat line at the user's target goal
+            return Array(30).fill(goalHours);
+        }
 
-    if (goalHours <= 6) {
-        goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time. Avoid screens an hour before bed to improve sleep quality.";
-    } else if (goalHours <= 8) {
-        goalText += " You're on the right track! Keep up with a consistent sleep schedule and avoid late-night snacks.";
-    } else {
-        goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime and make your sleep environment as dark and quiet as possible.";
-    }
+        function generateGraph(functionType, currentSleepData, goalSleepData) {
+            const canvas = document.getElementById('sleepChart');
+            const ctx = canvas.getContext('2d');
 
-    document.getElementById('goalText').innerHTML = goalText;
-}
+            // Clear previous chart if any
+            if (window.sleepChartInstance) {
+                window.sleepChartInstance.destroy(); 
+            }
 
+            // Create the graph comparing the current sleep pattern with the goal
+            window.sleepChartInstance = new Chart(ctx, {
+                type: 'line', // Always use a line graph
+                data: {
+                    labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
+                    datasets: [{
+                        label: `Current Sleep Pattern (${functionType})`,
+                        data: currentSleepData,
+                        borderColor: 'tab:blue',
+                        fill: false,
+                        tension: 0.4,
+                    }, {
+                        label: `Sleep Goal`,
+                        data: goalSleepData,
+                        borderColor: 'tab:red',
+                        borderDash: [5, 5], // Dashed line for the goal
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Compare Current Sleep Pattern and Sleep Goal`
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Hours of Sleep'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayGoalText(goalHours) {
+            // Display text to guide the user on how to achieve their goal
+            let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
+
+            if (goalHours <= 6) {
+                goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time. Avoid screens an hour before bed to improve sleep quality.";
+            } else if (goalHours <= 8) {
+                goalText += " You're on the right track! Keep up with a consistent sleep schedule and avoid late-night snacks.";
+            } else {
+                goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime and make your sleep environment as dark and quiet as possible.";
+            }
+
+            document.getElementById('goalText').innerHTML = goalText;
         }
     </script>
 </body>
