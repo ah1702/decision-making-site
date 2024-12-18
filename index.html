@@ -34,16 +34,6 @@
             margin-bottom: 20px;
         }
 
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 1em;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-
         button {
             padding: 10px 20px;
             font-size: 1em;
@@ -64,6 +54,11 @@
             max-width: 100%;
             height: auto;
         }
+
+        .goal-text {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 
@@ -74,172 +69,112 @@
         <!-- Phase 1: Current Sleep Pattern -->
         <h2>Phase 1: Current Sleep Pattern</h2>
         <form id="phase1">
-            <label for="consistency">How consistent are your sleep times?</label><br>
-            <select id="consistency">
-                <option value="1">Very consistent</option>
-                <option value="2">Sometimes consistent</option>
-                <option value="3">Highly inconsistent</option>
+            <label for="functionType">Choose a function to model your current sleep data:</label><br>
+            <select id="functionType">
+                <option value="linear">Linear (Constant increase)</option>
+                <option value="exponential">Exponential (Rapid increase)</option>
+                <option value="polynomial">Polynomial (Gradual change)</option>
+                <option value="sinusoidal">Sinusoidal (Fluctuating pattern)</option>
             </select><br><br>
 
-            <label for="irregularity">Do you have periods of irregular sleep?</label><br>
-            <select id="irregularity">
-                <option value="1">Yes</option>
-                <option value="2">No</option>
-            </select><br><br>
+            <label for="goalHours">Set your sleep goal (target hours per night):</label><br>
+            <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal"><br><br>
 
-            <label for="energy">How would you describe your typical energy levels throughout the day?</label><br>
-            <select id="energy">
-                <option value="1">Peaks and valleys</option>
-                <option value="2">Steady energy</option>
-                <option value="3">Drastic changes</option>
-            </select><br><br>
-
-            <label for="currentHours">How many hours of sleep do you currently get each night?</label><br>
-            <select id="currentHours">
-                <option value="1">Less than 6 hours</option>
-                <option value="2">Between 6-8 hours</option>
-                <option value="3">More than 8 hours</option>
-            </select><br><br>
-
-            <button type="button" onclick="processPhase1()">Next</button>
-        </form>
-
-        <!-- Phase 2: Sleep Goals -->
-        <h2>Phase 2: Sleep Goals</h2>
-        <form id="phase2">
-            <label for="goalDuration">What is your goal for your sleep duration over the next month?</label><br>
-            <select id="goalDuration">
-                <option value="1">Gradually increase sleep duration</option>
-                <option value="2">Increase sleep duration rapidly</option>
-                <option value="3">Stabilize and maintain sleep duration</option>
-            </select><br><br>
-
-            <label for="goalSpeed">How quickly do you hope to reach your desired sleep quality or time?</label><br>
-            <select id="goalSpeed">
-                <option value="1">Quickly (a few days to a week)</option>
-                <option value="2">Steadily (a couple of weeks)</option>
-                <option value="3">Gradually (over several months)</option>
-            </select><br><br>
-
-            <label for="maintainGoal">Would you like to maintain a specific sleep goal after reaching it?</label><br>
-            <select id="maintainGoal">
-                <option value="1">Yes, stabilize and maintain it</option>
-                <option value="2">No, I want to adjust it</option>
-            </select><br><br>
-
-            <label for="goalHours">How many hours of sleep would you ideally like to get each night?</label><br>
-            <select id="goalHours">
-                <option value="1">Less than 6 hours</option>
-                <option value="2">Between 6-8 hours</option>
-                <option value="3">More than 8 hours</option>
-            </select><br><br>
-
-            <button type="button" onclick="processPhase2()">Generate Graph</button>
+            <button type="button" onclick="processPhase1()">Generate Graph</button>
         </form>
 
         <canvas id="sleepChart"></canvas>
+
+        <div class="goal-text" id="goalText"></div>
     </div>
 
     <script>
-        let phase1Data = {
-            consistency: null,
-            irregularity: null,
-            energy: null,
-            currentHours: null
-        };
-
-        let phase2Data = {
-            goalDuration: null,
-            goalSpeed: null,
-            maintainGoal: null,
-            goalHours: null
-        };
-
         function processPhase1() {
-            phase1Data.consistency = document.getElementById('consistency').value;
-            phase1Data.irregularity = document.getElementById('irregularity').value;
-            phase1Data.energy = document.getElementById('energy').value;
-            phase1Data.currentHours = document.getElementById('currentHours').value;
+            const functionType = document.getElementById('functionType').value;
+            const goalHours = parseFloat(document.getElementById('goalHours').value);
 
             // Validate form
-            if (!phase1Data.consistency || !phase1Data.irregularity || !phase1Data.energy || !phase1Data.currentHours) {
-                alert("Please fill out all fields in Phase 1.");
+            if (!functionType || !goalHours) {
+                alert("Please choose a function type and set a sleep goal.");
                 return;
             }
 
-            // Based on this data, determine the graph type for Phase 1
-            let phase1Graph = determineGraphType(phase1Data, 'phase1');
-            generateGraph(phase1Graph, 'tab:blue', 'Phase 1: Current Sleep Pattern');
+            // Generate the appropriate graph based on the function type
+            let graphType = determineGraphType(functionType);
+            let currentSleepData = generateSleepData(functionType);
+            let goalSleepData = generateGoalSleepData(goalHours);
+
+            // Generate the graph comparing current sleep and goal sleep
+            generateGraph(graphType, functionType, currentSleepData, goalSleepData);
+            displayGoalText(goalHours);
         }
 
-        function processPhase2() {
-            phase2Data.goalDuration = document.getElementById('goalDuration').value;
-            phase2Data.goalSpeed = document.getElementById('goalSpeed').value;
-            phase2Data.maintainGoal = document.getElementById('maintainGoal').value;
-            phase2Data.goalHours = document.getElementById('goalHours').value;
-
-            // Validate form
-            if (!phase2Data.goalDuration || !phase2Data.goalSpeed || !phase2Data.maintainGoal || !phase2Data.goalHours) {
-                alert("Please fill out all fields in Phase 2.");
-                return;
+        function determineGraphType(functionType) {
+            // Determine the graph type based on the chosen function
+            if (functionType === "linear") {
+                return 'line';  // Line graph for linear function
+            } else if (functionType === "exponential") {
+                return 'line';  // Exponential is also represented using line graph
+            } else if (functionType === "polynomial") {
+                return 'line';  // Polynomial can be shown with a line graph
+            } else if (functionType === "sinusoidal") {
+                return 'line';  // Sinusoidal pattern is also best shown with a line graph
             }
-
-            // Based on this data, determine the graph type for Phase 2
-            let phase2Graph = determineGraphType(phase2Data, 'phase2');
-            generateGraph(phase2Graph, 'tab:green', 'Phase 2: Sleep Goals');
+            return 'line';
         }
 
-        function determineGraphType(data, phase) {
-            if (phase === 'phase1') {
-                // Phase 1 Graph Logic (Current Sleep Pattern)
-                if (data.currentHours === "1") {
-                    return 'line';  // Line chart for less than 6 hours
-                } else if (data.currentHours === "2") {
-                    return 'bar';  // Bar chart for 6-8 hours
-                } else {
-                    return 'radar';  // Radar chart for more than 8 hours
-                }
-            } else if (phase === 'phase2') {
-                // Phase 2 Graph Logic (Sleep Goals)
-                if (data.goalDuration === "1") {
-                    return 'bar';  // Bar chart for gradual increase
-                } else if (data.goalSpeed === "2") {
-                    return 'line';  // Line chart for steady increase
-                } else {
-                    return 'radar';  // Radar chart for more gradual approaches
+        function generateSleepData(functionType) {
+            // Generate the current sleep data based on the function type
+            let dataPoints = [];
+            for (let i = 0; i < 30; i++) {
+                if (functionType === "linear") {
+                    // Linear function: y = mx + b (e.g., y = 0.2 * x + 4)
+                    dataPoints.push(0.2 * i + 4);
+                } else if (functionType === "exponential") {
+                    // Exponential function: y = a * e^(bx)
+                    dataPoints.push(4 * Math.exp(0.1 * i)); 
+                } else if (functionType === "polynomial") {
+                    // Polynomial function: y = x^2 + 4x + 5
+                    dataPoints.push(Math.pow(i, 2) + 4 * i + 5); 
+                } else if (functionType === "sinusoidal") {
+                    // Sinusoidal function: y = A * sin(Bx + C) + D
+                    dataPoints.push(2 * Math.sin(0.2 * i) + 6);
                 }
             }
+            return dataPoints;
         }
 
-        function generateGraph(graphType, color, phaseLabel) {
+        function generateGoalSleepData(goalHours) {
+            // Goal sleep data is a flat line at the user's target goal
+            return Array(30).fill(goalHours);
+        }
+
+        function generateGraph(graphType, functionType, currentSleepData, goalSleepData) {
             const canvas = document.getElementById('sleepChart');
             const ctx = canvas.getContext('2d');
 
             // Clear previous chart if any
             if (window.sleepChartInstance) {
-                window.sleepChartInstance.destroy(); // Destroy the previous chart instance
+                window.sleepChartInstance.destroy(); 
             }
 
-            // Example data based on the user's goal in Phase 2
-            let dataPoints = Array.from({ length: 30 }, (_, i) => {
-                if (phaseLabel === 'Phase 2: Sleep Goals') {
-                    // Gradually increase the sleep duration over 30 days
-                    return Math.min(6 + (i * 0.1), 8); // Gradually reach 8 hours
-                } else {
-                    return Math.random() * 8 + 4; // Random data for Phase 1
-                }
-            });
-
+            // Create the graph comparing the current sleep pattern with the goal
             window.sleepChartInstance = new Chart(ctx, {
                 type: graphType,
                 data: {
                     labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
                     datasets: [{
-                        label: phaseLabel,
-                        data: dataPoints,
-                        borderColor: color,
+                        label: `Current Sleep Pattern (${functionType})`,
+                        data: currentSleepData,
+                        borderColor: 'tab:blue',
                         fill: false,
                         tension: 0.4,
+                    }, {
+                        label: `Sleep Goal`,
+                        data: goalSleepData,
+                        borderColor: 'tab:red',
+                        borderDash: [5, 5], // Dashed line for the goal
+                        fill: false,
                     }]
                 },
                 options: {
@@ -247,7 +182,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: phaseLabel
+                            text: `Compare Current Sleep Pattern and Sleep Goal`
                         },
                         legend: {
                             position: 'top'
@@ -263,15 +198,29 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Hours'
+                                text: 'Hours of Sleep'
                             }
                         }
                     }
                 }
             });
         }
+
+        function displayGoalText(goalHours) {
+            // Display text to guide the user on how to achieve their goal
+            let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
+
+            if (goalHours <= 6) {
+                goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time. Avoid screens an hour before bed to improve sleep quality.";
+            } else if (goalHours <= 8) {
+                goalText += " You're on the right track! Keep up with a consistent sleep schedule and avoid late-night snacks.";
+            } else {
+                goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime and make your sleep environment as dark and quiet as possible.";
+            }
+
+            document.getElementById('goalText').innerHTML = goalText;
+        }
     </script>
 </body>
 
 </html>
-
