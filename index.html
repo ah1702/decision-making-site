@@ -8,7 +8,57 @@
     <title>Sleep Pattern & Goal Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Same styling as your code */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        canvas {
+            margin-top: 30px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .goal-text {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 
@@ -16,7 +66,6 @@
     <div class="container">
         <h1>Sleep Pattern & Goal Tracker</h1>
 
-        <!-- Phase 1: Current Sleep Pattern -->
         <h2>Phase 1: Current Sleep Pattern</h2>
         <form id="phase1">
             <label for="historicalSleepData">Enter your historical sleep data (hours per night for the last 7 days):</label><br>
@@ -38,9 +87,15 @@
             const historicalSleepData = document.getElementById('historicalSleepData').value.split(',').map(Number);
             const goalHours = parseFloat(document.getElementById('goalHours').value);
 
-            // Validate form
+            // Validate input data
             if (historicalSleepData.length === 0 || !goalHours) {
                 alert("Please enter your historical sleep data and set a sleep goal.");
+                return;
+            }
+
+            // Validate the format of historical data (should be numbers)
+            if (historicalSleepData.some(isNaN)) {
+                alert("Please enter valid numbers for your historical sleep data.");
                 return;
             }
 
@@ -57,48 +112,60 @@
         }
 
         function determineFunctionType(historicalSleepData) {
-            // A simple heuristic to determine the function type
+            // Refined function to determine the type of sleep pattern
             let trend = checkForTrend(historicalSleepData);
             
             if (trend === "fluctuating") {
                 return "sinusoidal"; // fluctuating pattern
             } else if (trend === "increasing") {
                 return "exponential"; // exponential growth
+            } else if (trend === "gradual") {
+                return "polynomial"; // gradual changes
             } else {
-                return "linear"; // default to linear for steady trend
+                return "linear"; // steady or linear pattern
             }
         }
 
         function checkForTrend(data) {
-            let increasing = 0;
-            let fluctuating = 0;
-            
+            // Check for patterns in the data (linear, gradual, increasing, or fluctuating)
+            let increasing = 0, decreasing = 0, fluctuating = 0;
             for (let i = 1; i < data.length; i++) {
                 if (data[i] > data[i - 1]) {
                     increasing++;
-                } else if (Math.abs(data[i] - data[i - 1]) > 1) {
+                } else if (data[i] < data[i - 1]) {
+                    decreasing++;
+                } else {
                     fluctuating++;
                 }
             }
 
-            if (fluctuating > 2) {
-                return "fluctuating"; // significant fluctuations
+            // If the data is fluctuating a lot, it may fit sinusoidal
+            if (fluctuating > data.length / 2) {
+                return "fluctuating";
             }
-            if (increasing === data.length - 1) {
-                return "increasing"; // steadily increasing
+
+            // Detect gradual change which can fit a polynomial
+            if (Math.abs(increasing - decreasing) < 3) {
+                return "gradual";
             }
-            return "linear"; // steady or gradual changes
+
+            return increasing > decreasing ? "increasing" : "linear";
         }
 
         function generateSleepData(functionType, historicalSleepData) {
             let dataPoints = [];
+            let averageSleep = historicalSleepData.reduce((sum, value) => sum + value, 0) / historicalSleepData.length;
+
+            // Generate different sleep data models based on the function type
             for (let i = 0; i < 30; i++) {
                 if (functionType === "linear") {
-                    dataPoints.push(6 + i * 0.1); // Example linear model
+                    dataPoints.push(averageSleep + i * 0.05); // Linear increase
                 } else if (functionType === "exponential") {
-                    dataPoints.push(6 * Math.exp(0.1 * i)); // Exponential function
+                    dataPoints.push(averageSleep * Math.exp(0.05 * i)); // Exponential growth
+                } else if (functionType === "polynomial") {
+                    dataPoints.push(averageSleep + 0.1 * Math.pow(i, 2)); // Polynomial curve
                 } else if (functionType === "sinusoidal") {
-                    dataPoints.push(6 + 2 * Math.sin(0.2 * i)); // Sinusoidal function
+                    dataPoints.push(averageSleep + 1.5 * Math.sin(0.2 * i)); // Sinusoidal fluctuations
                 }
             }
             return dataPoints;
