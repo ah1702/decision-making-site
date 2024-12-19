@@ -66,10 +66,17 @@
     <div class="container">
         <h1>Sleep Pattern & Goal Tracker</h1>
 
+        <!-- Phase 1: Current Sleep Pattern -->
         <h2>Phase 1: Current Sleep Pattern</h2>
         <form id="phase1">
-            <label for="historicalSleepData">Enter your historical sleep data (hours per night for the last 7 days):</label><br>
-            <input type="text" id="historicalSleepData" placeholder="e.g. 6, 7, 6.5, 7.2, 6.8, 7, 8"><br><br>
+            <label for="functionType">Choose a function to model your current sleep data:</label><br>
+            <select id="functionType">
+                <option value="linear">Linear (Constant increase)</option>
+                <option value="exponential">Exponential (Rapid increase)</option>
+                <option value="polynomial">Polynomial (Gradual change)</option>
+                <option value="sinusoidal">Sinusoidal (Fluctuating pattern)</option>
+                <option value="hybrid">Hybrid (Exponential + Sinusoidal)</option>
+            </select><br><br>
 
             <label for="goalHours">Set your sleep goal (target hours per night):</label><br>
             <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal"><br><br>
@@ -84,68 +91,23 @@
 
     <script>
         function processPhase1() {
-            const historicalSleepData = document.getElementById('historicalSleepData').value.split(',').map(Number);
+            const functionType = document.getElementById('functionType').value;
             const goalHours = parseFloat(document.getElementById('goalHours').value);
 
-            // Validate input data
-            if (historicalSleepData.length === 0 || !goalHours) {
-                alert("Please enter your historical sleep data and set a sleep goal.");
+            // Validate form
+            if (!functionType || !goalHours) {
+                alert("Please choose a function type and set a sleep goal.");
                 return;
             }
-
-            // Validate the format of historical data (should be numbers)
-            if (historicalSleepData.some(isNaN)) {
-                alert("Please enter valid numbers for your historical sleep data.");
-                return;
-            }
-
-            // Automatically determine the function type based on historical sleep data
-            const functionType = determineFunctionType(historicalSleepData);
 
             // Generate the appropriate graph based on the function type
+            let historicalSleepData = Array(30).fill(6); // Assume 6 hours of sleep initially
             let currentSleepData = generateSleepData(functionType, historicalSleepData);
             let goalSleepData = generateGoalSleepData(goalHours);
 
             // Generate the graph comparing current sleep and goal sleep
             generateGraph(functionType, currentSleepData, goalSleepData);
             displayGoalText(goalHours);
-        }
-
-        function determineFunctionType(historicalSleepData) {
-            let trend = checkForTrend(historicalSleepData);
-            
-            if (trend === "fluctuating") {
-                return "sinusoidal"; 
-            } else if (trend === "increasing") {
-                return "exponential"; 
-            } else if (trend === "gradual") {
-                return "polynomial"; 
-            } else {
-                return "linear"; 
-            }
-        }
-
-        function checkForTrend(data) {
-            let increasing = 0, decreasing = 0, fluctuating = 0;
-            for (let i = 1; i < data.length; i++) {
-                if (data[i] > data[i - 1]) {
-                    increasing++;
-                } else if (data[i] < data[i - 1]) {
-                    decreasing++;
-                } else {
-                    fluctuating++;
-                }
-            }
-
-            if (fluctuating > data.length / 2) {
-                return "fluctuating";
-            }
-
-            if (Math.abs(increasing - decreasing) < 3) {
-                return "gradual";
-            }
-
-            return increasing > decreasing ? "increasing" : "linear";
         }
 
         function generateSleepData(functionType, historicalSleepData) {
@@ -162,15 +124,20 @@
                     sleepValue = averageSleep + 0.1 * Math.pow(i, 2);
                 } else if (functionType === "sinusoidal") {
                     sleepValue = averageSleep + 1.5 * Math.sin(0.2 * i);
+                } else if (functionType === "hybrid") {
+                    // Hybrid function: y(x) = a * e^(bx) + c * sin(dx) + f
+                    let a = 3, b = 0.05, c = 1.5, d = 0.3, f = 6;
+                    sleepValue = a * Math.exp(b * i) + c * Math.sin(d * i) + f;
                 }
-                
-                // Ensure the sleep value does not exceed 24
-                dataPoints.push(Math.min(sleepValue, 24)); 
+
+                // Ensure the sleep value does not exceed 24 (maximum sleep hours)
+                dataPoints.push(Math.min(sleepValue, 24));
             }
             return dataPoints;
         }
 
         function generateGoalSleepData(goalHours) {
+            // Goal sleep data is a flat line at the user's target goal
             return Array(30).fill(goalHours);
         }
 
@@ -180,11 +147,12 @@
 
             // Clear previous chart if any
             if (window.sleepChartInstance) {
-                window.sleepChartInstance.destroy(); 
+                window.sleepChartInstance.destroy();
             }
 
+            // Create the graph comparing the current sleep pattern with the goal
             window.sleepChartInstance = new Chart(ctx, {
-                type: 'line',
+                type: 'line', // Always use a line graph
                 data: {
                     labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
                     datasets: [{
@@ -197,7 +165,7 @@
                         label: `Sleep Goal`,
                         data: goalSleepData,
                         borderColor: 'tab:red',
-                        borderDash: [5, 5],
+                        borderDash: [5, 5], // Dashed line for the goal
                         fill: false,
                     }]
                 },
@@ -224,8 +192,7 @@
                                 display: true,
                                 text: 'Hours of Sleep'
                             },
-                            suggestedMin: 0,  // Minimum y-axis value
-                            max: 24,          // Maximum y-axis value set to 24
+                            max: 24  // Maximum value for the y-axis (24 hours)
                         }
                     }
                 }
@@ -233,14 +200,15 @@
         }
 
         function displayGoalText(goalHours) {
+            // Display text to guide the user on how to achieve their goal
             let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
 
             if (goalHours <= 6) {
-                goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time.";
+                goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time. Avoid screens an hour before bed to improve sleep quality.";
             } else if (goalHours <= 8) {
-                goalText += " You're on the right track! Keep up with a consistent sleep schedule.";
+                goalText += " You're on the right track! Keep up with a consistent sleep schedule and avoid late-night snacks.";
             } else {
-                goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime.";
+                goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime and make your sleep environment as dark and quiet as possible.";
             }
 
             document.getElementById('goalText').innerHTML = goalText;
@@ -249,4 +217,5 @@
 </body>
 
 </html>
+
 
