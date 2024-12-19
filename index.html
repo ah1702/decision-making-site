@@ -7,46 +7,76 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Sleep Pattern & Goal Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Lora&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #89CFF0, #f7c5d4);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             text-align: center;
+            color: #333;
         }
 
         .container {
             background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 80%;
             max-width: 800px;
             margin-top: 20px;
         }
 
         h1 {
-            font-size: 2em;
+            font-size: 2.5em;
             margin-bottom: 20px;
+            color: #4CAF50;
+            font-family: 'Lora', serif;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            color: #333;
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 12px 25px;
+            font-size: 1.1em;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 20px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
         button:hover {
             background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: #f7f7f7;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
 
         canvas {
@@ -58,6 +88,31 @@
         .goal-text {
             margin-top: 20px;
             font-size: 1.1em;
+            color: #555;
+        }
+
+        .goal-text span {
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -190,13 +245,13 @@
                     datasets: [{
                         label: `Current Sleep Pattern (${functionType})`,
                         data: currentSleepData,
-                        borderColor: 'tab:blue',
+                        borderColor: '#4CAF50',
                         fill: false,
                         tension: 0.4,
                     }, {
                         label: `Sleep Goal`,
                         data: goalSleepData,
-                        borderColor: 'tab:red',
+                        borderColor: '#FF5733',
                         borderDash: [5, 5],
                         fill: false,
                     }]
@@ -249,4 +304,3 @@
 </body>
 
 </html>
-
