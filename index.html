@@ -7,10 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Sleep Pattern & Goal Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Lora&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #89CFF0, #f7c5d4);
             display: flex;
             justify-content: center;
@@ -18,7 +17,6 @@
             height: 100vh;
             margin: 0;
             text-align: center;
-            color: #333;
         }
 
         .container {
@@ -35,7 +33,6 @@
             font-size: 2.5em;
             margin-bottom: 20px;
             color: #4CAF50;
-            font-family: 'Lora', serif;
         }
 
         h2 {
@@ -95,34 +92,15 @@
             font-weight: 600;
             color: #4CAF50;
         }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            h2 {
-                font-size: 1.4em;
-            }
-
-            button {
-                padding: 10px 20px;
-                font-size: 1em;
-            }
-        }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="container" id="phase1">
         <h1>Sleep Pattern & Goal Tracker</h1>
 
-        <h2>Phase 1: Current Sleep Pattern</h2>
-        <form id="phase1">
+        <h2>Phase 1: Current Sleep Data</h2>
+        <form id="phase1Form">
             <label for="historicalSleepData">Enter your historical sleep data (hours per night for the last 7 days):</label><br>
             <input type="text" id="historicalSleepData" placeholder="e.g. 6, 7, 6.5, 7.2, 6.8, 7, 8"><br><br>
 
@@ -132,10 +110,22 @@
             <label for="wakeTime">When do you usually wake up? (HH:MM):</label><br>
             <input type="time" id="wakeTime"><br><br>
 
+            <button type="button" onclick="submitPhase1()">Submit</button>
+        </form>
+    </div>
+
+    <div class="container" id="phase2" style="display:none;">
+        <h1>Phase 2: Set Sleep Goal</h1>
+
+        <h2>Goal Sleep Data</h2>
+        <form id="phase2Form">
             <label for="goalHours">Set your sleep goal (target hours per night):</label><br>
             <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal"><br><br>
 
-            <button type="button" onclick="processPhase1()">Generate Graph</button>
+            <label for="goalWakeTime">When do you want to wake up? (HH:MM):</label><br>
+            <input type="time" id="goalWakeTime"><br><br>
+
+            <button type="button" onclick="submitPhase2()">Generate Graph & Suggested Bedtime</button>
         </form>
 
         <canvas id="sleepChart"></canvas>
@@ -144,44 +134,52 @@
     </div>
 
     <script>
-        function processPhase1() {
-            const historicalSleepData = document.getElementById('historicalSleepData').value.split(',').map(Number);
-            const goalHours = parseFloat(document.getElementById('goalHours').value);
-            const sleepTime = document.getElementById('sleepTime').value;
-            const wakeTime = document.getElementById('wakeTime').value;
+        let historicalSleepData = [];
+        let goalHours = 0;
+        let goalWakeTime = '';
+        let usualSleepTime = '';
+        let usualWakeTime = '';
 
-            // Validate input data
-            if (historicalSleepData.length === 0 || !goalHours) {
-                alert("Please enter your historical sleep data and set a sleep goal.");
+        function submitPhase1() {
+            historicalSleepData = document.getElementById('historicalSleepData').value.split(',').map(Number);
+            usualSleepTime = document.getElementById('sleepTime').value;
+            usualWakeTime = document.getElementById('wakeTime').value;
+
+            // Validate data
+            if (historicalSleepData.length !== 7 || historicalSleepData.some(isNaN)) {
+                alert("Please enter 7 valid numbers for your historical sleep data.");
                 return;
             }
 
-            // Validate the format of historical data (should be numbers)
-            if (historicalSleepData.some(isNaN)) {
-                alert("Please enter valid numbers for your historical sleep data.");
+            // Switch to Phase 2
+            document.getElementById('phase1').style.display = 'none';
+            document.getElementById('phase2').style.display = 'block';
+        }
+
+        function submitPhase2() {
+            goalHours = parseFloat(document.getElementById('goalHours').value);
+            goalWakeTime = document.getElementById('goalWakeTime').value;
+
+            if (!goalHours || !goalWakeTime) {
+                alert("Please enter both your sleep goal hours and wake-up time.");
                 return;
             }
 
-            // Automatically determine the function type based on historical sleep data
+            // Generate sleep data for the graph
             const functionType = determineFunctionType(historicalSleepData);
-
-            // Generate the appropriate graph based on the function type
             let currentSleepData = generateSleepData(functionType, historicalSleepData);
             let goalSleepData = generateGoalSleepData(goalHours);
 
-            // Generate the graph comparing current sleep and goal sleep
+            // Generate graph
             generateGraph(functionType, currentSleepData, goalSleepData);
 
-            // Display sleep goal text
-            displayGoalText(goalHours);
-
-            // Calculate suggested bedtime
-            calculateSuggestedBedtime(sleepTime, wakeTime, goalHours);
+            // Calculate suggested bedtime based on goal and wake time
+            calculateSuggestedBedtime(goalHours, goalWakeTime);
         }
 
         function determineFunctionType(historicalSleepData) {
             let trend = checkForTrend(historicalSleepData);
-            
+
             if (trend === "fluctuating") {
                 return "sinusoidal"; 
             } else if (trend === "increasing") {
@@ -231,7 +229,7 @@
                 } else if (functionType === "sinusoidal") {
                     sleepValue = averageSleep + 1.5 * Math.sin(0.2 * i);
                 }
-                
+
                 // Ensure the sleep value does not exceed 24
                 dataPoints.push(Math.min(sleepValue, 24)); 
             }
@@ -248,7 +246,7 @@
 
             // Clear previous chart if any
             if (window.sleepChartInstance) {
-                window.sleepChartInstance.destroy(); 
+                window.sleepChartInstance.destroy();
             }
 
             window.sleepChartInstance = new Chart(ctx, {
@@ -258,13 +256,13 @@
                     datasets: [{
                         label: `Current Sleep Pattern (${functionType})`,
                         data: currentSleepData,
-                        borderColor: '#4CAF50',
+                        borderColor: 'tab:blue',
                         fill: false,
                         tension: 0.4,
                     }, {
                         label: `Sleep Goal`,
                         data: goalSleepData,
-                        borderColor: '#FF5733',
+                        borderColor: 'tab:red',
                         borderDash: [5, 5],
                         fill: false,
                     }]
@@ -300,26 +298,19 @@
             });
         }
 
-        function displayGoalText(goalHours) {
-            let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
+        function calculateSuggestedBedtime(goalHours, goalWakeTime) {
+            const [goalWakeHour, goalWakeMinute] = goalWakeTime.split(':').map(Number);
+            const goalWakeDate = new Date();
+            goalWakeDate.setHours(goalWakeHour, goalWakeMinute, 0);
 
-            if (goalHours <= 6) {
-                goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time.";
-            } else if (goalHours <= 8) {
-                goalText += " You're on the right track! Keep up with a consistent sleep schedule.";
-            } else {
-                goalText += " Aiming for over 8 hours of sleep? Consider an earlier bedtime.";
-            }
+            const suggestedBedtime = new Date(goalWakeDate.getTime() - goalHours * 60 * 60 * 1000);
+            const bedtimeFormatted = suggestedBedtime.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
 
-            document.getElementById('goalText').innerHTML = goalText;
-        }
-
-        function calculateSuggestedBedtime(sleepTime, wakeTime, goalHours) {
-            const wakeDate = new Date(`1970-01-01T${wakeTime}:00Z`);
-            const suggestedBedtime = new Date(wakeDate.getTime() - goalHours * 60 * 60 * 1000);
-
-            const bedtimeFormatted = suggestedBedtime.toISOString().substr(11, 5);
-            alert(`To get ${goalHours} hours of sleep, you should aim to go to sleep at ${bedtimeFormatted}.`);
+            const goalText = `To get ${goalHours} hours of sleep, you should aim to go to sleep at ${bedtimeFormatted}.`;
+            document.getElementById('goalText').innerText = goalText;
         }
     </script>
 </body>
