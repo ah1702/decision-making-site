@@ -7,42 +7,79 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Sleep Pattern & Goal Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts for better typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            text-align: center;
+            color: #333;
         }
 
         .container {
             background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 800px;
-            margin-top: 20px;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 850px;
+            text-align: left;
         }
 
         h1 {
-            font-size: 2em;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 600;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 12px;
             margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: #f7f7f7;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
 
         button {
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
+            padding: 12px 25px;
+            font-size: 1.1em;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
@@ -50,14 +87,41 @@
         }
 
         canvas {
-            margin-top: 30px;
+            margin-top: 40px;
             max-width: 100%;
             height: auto;
         }
 
         .goal-text {
-            margin-top: 20px;
-            font-size: 1.1em;
+            margin-top: 30px;
+            font-size: 1.2em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .goal-text span {
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -66,20 +130,19 @@
     <div class="container">
         <h1>Sleep Pattern & Goal Tracker</h1>
 
-        <!-- Phase 1: Current Sleep Pattern -->
         <h2>Phase 1: Current Sleep Pattern</h2>
         <form id="phase1">
-            <label for="functionType">Choose a function to model your current sleep data:</label><br>
+            <label for="functionType">Choose a function to model your current sleep data:</label>
             <select id="functionType">
                 <option value="linear">Linear (Constant increase)</option>
                 <option value="exponential">Exponential (Rapid increase)</option>
                 <option value="polynomial">Polynomial (Gradual change)</option>
                 <option value="sinusoidal">Sinusoidal (Fluctuating pattern)</option>
                 <option value="hybrid">Hybrid (Exponential + Sinusoidal)</option>
-            </select><br><br>
+            </select>
 
-            <label for="goalHours">Set your sleep goal (target hours per night):</label><br>
-            <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal"><br><br>
+            <label for="goalHours">Set your sleep goal (target hours per night):</label>
+            <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal">
 
             <button type="button" onclick="processPhase1()">Generate Graph</button>
         </form>
@@ -158,13 +221,13 @@
                     datasets: [{
                         label: `Current Sleep Pattern (${functionType})`,
                         data: currentSleepData,
-                        borderColor: 'tab:blue',
+                        borderColor: '#4CAF50',
                         fill: false,
                         tension: 0.4,
                     }, {
                         label: `Sleep Goal`,
                         data: goalSleepData,
-                        borderColor: 'tab:red',
+                        borderColor: '#FF5733',
                         borderDash: [5, 5], // Dashed line for the goal
                         fill: false,
                     }]
@@ -201,7 +264,7 @@
 
         function displayGoalText(goalHours) {
             // Display text to guide the user on how to achieve their goal
-            let goalText = `Your goal is to sleep ${goalHours} hours each night.`;
+            let goalText = `Your goal is to sleep <span>${goalHours}</span> hours each night.`;
 
             if (goalHours <= 6) {
                 goalText += " To achieve this, aim to establish a consistent bedtime and wake-up time. Avoid screens an hour before bed to improve sleep quality.";
@@ -217,5 +280,3 @@
 </body>
 
 </html>
-
-
