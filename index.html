@@ -112,22 +112,20 @@
         }
 
         function determineFunctionType(historicalSleepData) {
-            // Refined function to determine the type of sleep pattern
             let trend = checkForTrend(historicalSleepData);
             
             if (trend === "fluctuating") {
-                return "sinusoidal"; // fluctuating pattern
+                return "sinusoidal"; 
             } else if (trend === "increasing") {
-                return "exponential"; // exponential growth
+                return "exponential"; 
             } else if (trend === "gradual") {
-                return "polynomial"; // gradual changes
+                return "polynomial"; 
             } else {
-                return "linear"; // steady or linear pattern
+                return "linear"; 
             }
         }
 
         function checkForTrend(data) {
-            // Check for patterns in the data (linear, gradual, increasing, or fluctuating)
             let increasing = 0, decreasing = 0, fluctuating = 0;
             for (let i = 1; i < data.length; i++) {
                 if (data[i] > data[i - 1]) {
@@ -139,12 +137,10 @@
                 }
             }
 
-            // If the data is fluctuating a lot, it may fit sinusoidal
             if (fluctuating > data.length / 2) {
                 return "fluctuating";
             }
 
-            // Detect gradual change which can fit a polynomial
             if (Math.abs(increasing - decreasing) < 3) {
                 return "gradual";
             }
@@ -156,17 +152,20 @@
             let dataPoints = [];
             let averageSleep = historicalSleepData.reduce((sum, value) => sum + value, 0) / historicalSleepData.length;
 
-            // Generate different sleep data models based on the function type
             for (let i = 0; i < 30; i++) {
+                let sleepValue;
                 if (functionType === "linear") {
-                    dataPoints.push(averageSleep + i * 0.05); // Linear increase
+                    sleepValue = averageSleep + i * 0.05;
                 } else if (functionType === "exponential") {
-                    dataPoints.push(averageSleep * Math.exp(0.05 * i)); // Exponential growth
+                    sleepValue = averageSleep * Math.exp(0.05 * i);
                 } else if (functionType === "polynomial") {
-                    dataPoints.push(averageSleep + 0.1 * Math.pow(i, 2)); // Polynomial curve
+                    sleepValue = averageSleep + 0.1 * Math.pow(i, 2);
                 } else if (functionType === "sinusoidal") {
-                    dataPoints.push(averageSleep + 1.5 * Math.sin(0.2 * i)); // Sinusoidal fluctuations
+                    sleepValue = averageSleep + 1.5 * Math.sin(0.2 * i);
                 }
+                
+                // Ensure the sleep value does not exceed 24
+                dataPoints.push(Math.min(sleepValue, 24)); 
             }
             return dataPoints;
         }
@@ -250,3 +249,4 @@
 </body>
 
 </html>
+
