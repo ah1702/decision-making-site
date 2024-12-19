@@ -126,6 +126,12 @@
             <label for="historicalSleepData">Enter your historical sleep data (hours per night for the last 7 days):</label><br>
             <input type="text" id="historicalSleepData" placeholder="e.g. 6, 7, 6.5, 7.2, 6.8, 7, 8"><br><br>
 
+            <label for="sleepTime">When do you usually go to sleep? (HH:MM):</label><br>
+            <input type="time" id="sleepTime"><br><br>
+
+            <label for="wakeTime">When do you usually wake up? (HH:MM):</label><br>
+            <input type="time" id="wakeTime"><br><br>
+
             <label for="goalHours">Set your sleep goal (target hours per night):</label><br>
             <input type="number" id="goalHours" min="4" max="12" placeholder="Hours of sleep goal"><br><br>
 
@@ -141,6 +147,8 @@
         function processPhase1() {
             const historicalSleepData = document.getElementById('historicalSleepData').value.split(',').map(Number);
             const goalHours = parseFloat(document.getElementById('goalHours').value);
+            const sleepTime = document.getElementById('sleepTime').value;
+            const wakeTime = document.getElementById('wakeTime').value;
 
             // Validate input data
             if (historicalSleepData.length === 0 || !goalHours) {
@@ -163,7 +171,12 @@
 
             // Generate the graph comparing current sleep and goal sleep
             generateGraph(functionType, currentSleepData, goalSleepData);
+
+            // Display sleep goal text
             displayGoalText(goalHours);
+
+            // Calculate suggested bedtime
+            calculateSuggestedBedtime(sleepTime, wakeTime, goalHours);
         }
 
         function determineFunctionType(historicalSleepData) {
@@ -300,7 +313,10 @@
 
             document.getElementById('goalText').innerHTML = goalText;
         }
-    </script>
-</body>
 
-</html>
+        function calculateSuggestedBedtime(sleepTime, wakeTime, goalHours) {
+            const wakeDate = new Date(`1970-01-01T${wakeTime}:00Z`);
+            const suggestedBedtime = new Date(wakeDate.getTime() - goalHours * 60 * 60 * 1000);
+
+            const bedtimeFormatted = suggestedBedtime.toISOString().
+
