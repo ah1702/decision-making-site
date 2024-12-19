@@ -318,5 +318,10 @@
             const wakeDate = new Date(`1970-01-01T${wakeTime}:00Z`);
             const suggestedBedtime = new Date(wakeDate.getTime() - goalHours * 60 * 60 * 1000);
 
-            const bedtimeFormatted = suggestedBedtime.toISOString().
+            const bedtimeFormatted = suggestedBedtime.toISOString().substr(11, 5);
+            alert(`To get ${goalHours} hours of sleep, you should aim to go to sleep at ${bedtimeFormatted}.`);
+        }
+    </script>
+</body>
 
+</html>
